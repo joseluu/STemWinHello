@@ -711,10 +711,10 @@
     <ClCompile Include="Src\k_touch.c">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\SubdialogKey.c">
+    <ClCompile Include="Src\FramewinDLG.c">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\FramewinDLGSweeper.c">
+    <ClCompile Include="Src\SubdialogDLG.c">
       <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -382,9 +382,6 @@
     <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\CMSIS_HAL\RTOS\Template\cmsis_os.h">
       <Filter>Header files\Device-specific files\HAL</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32756G_EVAL\stm32756g_eval.h">
-      <Filter>Header files\Device-specific files\Board</Filter>
-    </ClInclude>
     <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\Components\ampire480272\ampire480272.h">
       <Filter>Header files\Device-specific files\ampire480272 Driver</Filter>
     </ClInclude>
@@ -420,6 +417,18 @@
     </ClInclude>
     <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\Components\Common\tsensor.h">
       <Filter>Header files\Device-specific files\ampire480272 Driver</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32746G-Discovery\stm32746g_discovery.h">
+      <Filter>Header files\Device-specific files\Board</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32746G-Discovery\stm32746g_discovery_lcd.h">
+      <Filter>Header files\Device-specific files\Board</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32746G-Discovery\stm32746g_discovery_sdram.h">
+      <Filter>Header files\Device-specific files\Board</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32746G-Discovery\stm32746g_discovery_ts.h">
+      <Filter>Header files\Device-specific files\Board</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\Components\ampire640480\ampire640480.h">
       <Filter>Header files\Device-specific files\ampire640480 Driver</Filter>
@@ -457,11 +466,11 @@
     <ClInclude Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\Components\wm8994\wm8994.h">
       <Filter>Header files\Device-specific files\wm8994 Driver</Filter>
     </ClInclude>
+    <ClInclude Include="Inc\k_touch.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\BASIC_HelloWorld.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="Src\GUIConf.c">
       <Filter>Source files</Filter>
     </ClCompile>
@@ -473,9 +482,6 @@
     </ClCompile>
     <ClCompile Include="Src\stm32f7xx_it.c">
       <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\StartupFiles\startup_stm32f746xx.c">
-      <Filter>Source files\Device-specific files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\STM32F7xx_HAL_Driver\Src\stm32f7xx_hal.c">
       <Filter>Source files\Device-specific files\HAL</Filter>
@@ -657,9 +663,6 @@
     <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\STM32F7xx_HAL_Driver\Src\stm32f7xx_ll_usb.c">
       <Filter>Source files\Device-specific files\HAL</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32756G_EVAL\stm32756g_eval.c">
-      <Filter>Source files\Device-specific files\Board</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\Components\exc7200\exc7200.c">
       <Filter>Source files\Device-specific files\exc7200 Driver</Filter>
     </ClCompile>
@@ -684,13 +687,34 @@
     <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\Components\wm8994\wm8994.c">
       <Filter>Source files\Device-specific files\wm8994 Driver</Filter>
     </ClCompile>
-    <ClCompile Include="Src\stm32746g_discovery_sdram.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\CMSIS_HAL\Device\ST\STM32F7xx\Source\Templates\system_stm32f7xx.c">
       <Filter>Source files\Device-specific files\SystemInit</Filter>
     </ClCompile>
     <ClCompile Include="Src\GUI_X.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\StartupFiles\startup_stm32f746xx.c">
+      <Filter>Source files\Device-specific files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32746G-Discovery\stm32746g_discovery.c">
+      <Filter>Source files\Device-specific files\Board</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32746G-Discovery\stm32746g_discovery_lcd.c">
+      <Filter>Source files\Device-specific files\Board</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32746G-Discovery\stm32746g_discovery_sdram.c">
+      <Filter>Source files\Device-specific files\Board</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F7xxxx\BSP\STM32746G-Discovery\stm32746g_discovery_ts.c">
+      <Filter>Source files\Device-specific files\Board</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\k_touch.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\SubdialogKey.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\FramewinDLGSweeper.c">
       <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>

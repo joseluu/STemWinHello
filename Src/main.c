@@ -48,6 +48,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "WM.h"
+#include "k_touch.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -89,8 +90,12 @@ int main(void)
   
   /* Configure LED1 */
   BSP_LED_Init(LED1);
+	extern	void TOUCH_X_Init(void);
+	  //TOUCH_X_Init();
+	k_TouchInit(480, 277);
 
   /***********************************************************/
+  #if 1
   
   /* Compute the prescaler value to have TIM3 counter clock equal to 10 KHz */
   uwPrescalerValue = (uint32_t) ((SystemCoreClock /2) / 10000) - 1;
@@ -104,7 +109,7 @@ int main(void)
        + ClockDivision = 0
        + Counter direction = Up
   */
-  TimHandle.Init.Period = 500 - 1;
+  TimHandle.Init.Period = 2500 - 1; //20ms
   TimHandle.Init.Prescaler = uwPrescalerValue;
   TimHandle.Init.ClockDivision = 0;
   TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -125,7 +130,7 @@ int main(void)
   }
   
   /***********************************************************/
-  
+#endif
   /* Init the STemWin GUI Library */
   BSP_SDRAM_Init(); /* Initializes the SDRAM device */
   __HAL_RCC_CRC_CLK_ENABLE(); /* Enable the CRC Module */
@@ -136,12 +141,23 @@ int main(void)
   GUI_Initialized = 1;
   
   /* Activate the use of memory device feature */
-  WM_SetCreateFlags(WM_CF_MEMDEV);
-    
+  //WM_SetCreateFlags(WM_CF_MEMDEV);
+
+#ifdef WIDGET_TEST
   MainTask();
+#else
+	extern WM_HWIN CreateFramewin(void);
+	CreateFramewin();
+#endif
   
+
   /* Infinite loop */
-  for(;;);
+	while (1) {
+		GUI_Exec();
+		//k_TouchUpdate();
+		GUI_Delay(10);
+
+	}
 }
 
 /**
@@ -151,7 +167,10 @@ int main(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  BSP_Background();
+	if (htim->Instance == TIM3){
+		k_TouchUpdate(); 
+		BSP_Background();
+	}
 }
 
 /**

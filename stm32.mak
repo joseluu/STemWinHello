@@ -15,8 +15,8 @@ AR := $(TOOLCHAIN_ROOT)/bin/arm-eabi-ar.exe
 OBJCOPY := $(TOOLCHAIN_ROOT)/bin/arm-eabi-objcopy.exe
 
 #Additional flags
-PREPROCESSOR_MACROS += ARM_MATH_CM7 STM32F746NE stm32_flash_layout STM32F746xx
-INCLUDE_DIRS += . $(BSP_ROOT)/STM32F7xxxx/STM32F7xx_HAL_Driver/Inc $(BSP_ROOT)/STM32F7xxxx/STM32F7xx_HAL_Driver/Inc/Legacy $(BSP_ROOT)/STM32F7xxxx/CMSIS_HAL/Device/ST/STM32F7xx/Include $(BSP_ROOT)/STM32F7xxxx/CMSIS_HAL/Include $(BSP_ROOT)/STM32F7xxxx/CMSIS_HAL/RTOS/Template $(BSP_ROOT)/STM32F7xxxx/BSP/STM32746G-Discovery $(BSP_ROOT)/STM32F7xxxx/BSP/Components/ampire480272 $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/ampire640480 $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/exc7200 $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/ft5336 $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/mfxstm32l152 $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/n25q128a $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/n25q512a $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/ov9655 $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/rk043fn48h $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/s5k5cag $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/stmpe811 $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/ts3510 $(BSP_ROOT)/STM32F7xxxx/BSP/Components/Common $(BSP_ROOT)/STM32F7xxxx/BSP/Components/wm8994
+PREPROCESSOR_MACROS += ARM_MATH_CM3 STM32F103C8 stm32_flash_layout STM32F103xB
+INCLUDE_DIRS += . $(BSP_ROOT)/STM32F1xxxx/STM32F1xx_HAL_Driver/Inc $(BSP_ROOT)/STM32F1xxxx/STM32F1xx_HAL_Driver/Inc/Legacy $(BSP_ROOT)/STM32F1xxxx/CMSIS_HAL/Device/ST/STM32F1xx/Include $(BSP_ROOT)/STM32F1xxxx/CMSIS_HAL/Include $(BSP_ROOT)/STM32F1xxxx/CMSIS_HAL/RTOS/Template
 LIBRARY_DIRS += 
 LIBRARY_NAMES += compactcpp
 ADDITIONAL_LINKER_INPUTS += 
@@ -27,6 +27,6 @@ CFLAGS +=
 CXXFLAGS += 
 ASFLAGS += 
 LDFLAGS +=  
-COMMONFLAGS += -mcpu=cortex-m7 -mthumb -mfloat-abi=hard
-LINKER_SCRIPT := $(BSP_ROOT)/STM32F7xxxx/LinkerScripts/STM32F746NE_flash.lds
+COMMONFLAGS += -mcpu=cortex-m3 -mthumb
+LINKER_SCRIPT := $(BSP_ROOT)/STM32F1xxxx/LinkerScripts/STM32F103C8_flash.lds
 

@@ -179,11 +179,14 @@
     <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F1xxxx\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_fsmc.c" />
     <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F1xxxx\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_sdmmc.c" />
     <ClCompile Include="C:\Users\jluu\AppData\Local\VisualGDB\EmbeddedBSPs\arm-eabi\com.sysprogs.arm.stm32\STM32F1xxxx\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_usb.c" />
+    <ClCompile Include="Src\FramewinDLG.c" />
     <ClCompile Include="Src\GUIConf_F103_24.c" />
+    <ClCompile Include="Src\GUI_X.c" />
     <ClCompile Include="Src\LCDConf_F103_24.c" />
-    <ClCompile Include="Src\main.c" />
+    <ClCompile Include="Src\main_orig.c" />
     <ClCompile Include="Src\stm32f1xx_hal_msp.c" />
     <ClCompile Include="Src\stm32f1xx_it.c" />
+    <ClCompile Include="Src\SubdialogDLG.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="debug.mak" />

@@ -68,7 +68,7 @@ Purpose     : Display controller configuration (single layer)
 *
 **********************************************************************
 */
-
+#define LCD_MIRROR_X 1
 //
 // Physical display size
 //
@@ -118,6 +118,7 @@ Purpose     : Display controller configuration (single layer)
 *
 **********************************************************************
 */
+void MX_GPIO_Init(void);
 /* connection: 
 8 bit Data:  PortA, 
 CS: PB_7, chip select
@@ -126,11 +127,15 @@ RS RD: PB_6,      read strobe
 WR: PB_5,		write strobe
 RD  DC: PB_4     register or data  data/command
 */
-#define _DC(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _RD(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
 #define _WR(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_5,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
-#define _RD(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _DC(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
 #define _CS(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
 #define _RESET(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_8,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+
+/* compatibility macros */
+#define wr_cmd8 LcdWriteReg
+#define wr_data8 LcdWriteData
 
 void delay_us_DWT(int uSec)
 {
@@ -140,14 +145,6 @@ void delay_us_DWT(int uSec)
 	} while (DWT->CYCCNT - start < cycles);
 }
 
-void Board_LCD_Init(void)
-{
-	_CS(1);
-	_RESET(0);  // reset is active
-	delay_us_DWT(10);  // 10us min
-	_RESET(1);                       // end reset
-	delay_us_DWT(120000);				
-}
 /********************************************************************
 *
 *       LcdWriteReg
@@ -188,11 +185,9 @@ static void LcdWriteData(U8 Data) {
 *   Writes multiple values to a display register.
 */
 static void LcdWriteDataMultiple(U8 * pData, int NumItems) {
-  
   while (NumItems--) {
 	  LcdWriteData(*pData++);
   } 
-  
 }
 
 /********************************************************************
@@ -202,18 +197,46 @@ static void LcdWriteDataMultiple(U8 * pData, int NumItems) {
 * Function description:
 *   Reads multiple values from a display register.
 */
+static void PortA_input()
+{
+	GPIO_InitTypeDef GPIO_InitStruct;
+	/*Configure GPIO pins : PA0 PA1 PA2 PA3 
+                           PA4 PA5 PA6 PA7 */
+	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 
+	                        | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
+static void PortA_output()
+{
+	GPIO_InitTypeDef GPIO_InitStruct;
+	/*Configure GPIO pins : PA0 PA1 PA2 PA3 
+                           PA4 PA5 PA6 PA7 */
+	GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 
+	                        | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
 static U8 LcdReadData(void){
 	U8 Data;
+	PortA_input();
 	_RD(0);
 	Data = GPIOA->IDR;     // fake read is necessary
 	_RD(1);	
 	_RD(0);
 	Data= GPIOA->IDR;     // read 8bit should allow 45ns settling time
 	_RD(1);	
+	PortA_output();
 	return Data;
 }
+
 static void LcdReadDataMultiple(U8 * pData, int NumItems) {
 	U8 Data;
+	PortA_input();
 	_RD(0);
 	Data = GPIOA->IDR;     // fake read is necessary
 	_RD(1);	
@@ -222,7 +245,166 @@ static void LcdReadDataMultiple(U8 * pData, int NumItems) {
 		*pData++ = GPIOA->IDR;     // read 8bit should allow 45ns settling time
 		_RD(1);	
 	}
+	PortA_output();
 }
+
+unsigned int rd_reg_data32(unsigned char reg)
+{
+	wr_cmd8(reg);
+	unsigned int r = 0;
+	PortA_input();
+   
+	U8 rb[4];
+	LcdReadDataMultiple(&rb[0], 4);
+	r = rb[0] << 24 | rb[1] << 16 | rb[2] << 8 | rb[3];
+
+    
+	_CS(1); // force CS HIG to interupt the cmd in case was not supported
+	_CS(0);
+	PortA_output();
+	return r;
+}
+
+
+void Board_LCD_Init(void)
+{
+	unsigned int tftID;
+	MX_GPIO_Init();
+	_RD(1);
+	_WR(1);
+	_DC(1);
+	_CS(1);
+	_RESET(1);
+	delay_us_DWT(150000);  // 10us min
+	_RESET(0);  // reset is active
+	delay_us_DWT(20000);  // 10us min
+	_RESET(1);                       // end reset
+	delay_us_DWT(150000);		// 120 ms min		
+
+	tftID = rd_reg_data32(0xBF);
+	tftID = rd_reg_data32(0x0);
+
+	/* Start Initial Sequence ----------------------------------------------------*/
+    
+	wr_cmd8(0xCB);  // POWER_ON_SEQ_CONTROL             
+	wr_data8(0x39);
+	wr_data8(0x2C);
+	wr_data8(0x00);
+	wr_data8(0x34);
+	wr_data8(0x02);
+     
+	wr_cmd8(0xCF);  // POWER_CONTROL_B              
+	wr_data8(0x00);
+	wr_data8(0xC1);  // Applic Notes 81, was 83, C1 enables PCEQ: PC and EQ operation for power saving
+	wr_data8(0x30);
+     
+	wr_cmd8(0xE8);  // DRIVER_TIMING_CONTROL_A               
+	wr_data8(0x85);
+	wr_data8(0x00);  // AN 10, was 01
+	wr_data8(0x78);  // AN 7A, was 79
+     
+	wr_cmd8(0xEA);  // DRIVER_TIMING_CONTROL_B                    
+	wr_data8(0x00);
+	wr_data8(0x00);
+     
+	wr_cmd8(0xED);                     
+	wr_data8(0x64);
+	wr_data8(0x03);
+	wr_data8(0x12);
+	wr_data8(0x81);
+     
+	wr_cmd8(0xF7);  // PUMP_RATIO_CONTROL                   
+	wr_data8(0x20);
+     
+	wr_cmd8(0xC0);                     // POWER_CONTROL_1
+	wr_data8(0x23);  // AN 21, was 26
+     
+	wr_cmd8(0xC1);                     // POWER_CONTROL_2
+	wr_data8(0x10);  // AN 11, was 11
+     
+	wr_cmd8(0xC5);                     // VCOM_CONTROL_1
+	wr_data8(0x3E);  // AN 3F, was 35
+	wr_data8(0x28);  // AN 3C, was 3E
+     
+	wr_cmd8(0xC7);                     // VCOM_CONTROL_2
+	wr_data8(0x86);  // AN A7, was BE
+     
+     
+     
+	wr_cmd8(0xB1);                     // Frame Rate
+	wr_data8(0x00);
+	wr_data8(0x18);  // AN 1B, was 1B  1B=70hz             
+     
+	wr_cmd8(0xB6);                       // display function control, INTERESTING
+	wr_data8(0x08);  // AN 0A, was 0A
+	wr_data8(0x82);  // AN A2
+	wr_data8(0x27);  // AN not present
+	//   wr_data8(0x00);  // was present
+     
+	wr_cmd8(0xF2);                     // Gamma Function Disable
+	wr_data8(0x00);  // AN 00, was 08
+     
+	wr_cmd8(0x26);                     
+	wr_data8(0x01);                 // gamma set for curve 01/2/04/08
+     
+	wr_cmd8(0xE0);                     // positive gamma correction
+	wr_data8(0x0F); 
+	wr_data8(0x31); 
+	wr_data8(0x2B); 
+	wr_data8(0x0C); 
+	wr_data8(0x0E); 
+	wr_data8(0x08); 
+	wr_data8(0x4E); 
+	wr_data8(0xF1); 
+	wr_data8(0x37); 
+	wr_data8(0x07); 
+	wr_data8(0x10); 
+	wr_data8(0x03); 
+	wr_data8(0x0E);
+	wr_data8(0x09); 
+	wr_data8(0x00);
+     
+	wr_cmd8(0xE1);                     // negativ gamma correction
+	wr_data8(0x00); 
+	wr_data8(0x0E); 
+	wr_data8(0x14); 
+	wr_data8(0x03); 
+	wr_data8(0x11); 
+	wr_data8(0x07); 
+	wr_data8(0x31); 
+	wr_data8(0xC1); 
+	wr_data8(0x48); 
+	wr_data8(0x08); 
+	wr_data8(0x0F); 
+	wr_data8(0x0C); 
+	wr_data8(0x31);
+	wr_data8(0x36); 
+	wr_data8(0x0F);
+     
+	//wr_cmd8(0x34);                     // tearing effect off
+     
+	//wr_cmd8(0x35);                     // tearing effect on
+      
+	//   wr_cmd8(0xB7);                       // ENTRY_MODE_SET
+	//   wr_data8(0x07);
+  
+	wr_cmd8(0x36);      // MEMORY_ACCESS_CONTROL (orientation stuff)
+	wr_data8(0x48);
+     
+	wr_cmd8(0x3A);      // COLMOD_PIXEL_FORMAT_SET
+	wr_data8(0x55);     // 16 bit pixel 
+
+	wr_cmd8(0x13); // Normal Displaymode
+    
+	wr_cmd8(0x11);                     // sleep out
+	delay_us_DWT(150000);
+     
+	wr_cmd8(0x29);                     // display on
+	delay_us_DWT(150000);
+}
+
+
+
 
 /*********************************************************************
 *
@@ -255,7 +437,7 @@ void LCD_X_Config(void) {
   //
   // Orientation
   //
-  Config.Orientation = GUI_SWAP_XY | GUI_MIRROR_Y;
+	Config.Orientation = GUI_SWAP_XY;
   GUIDRV_FlexColor_Config(pDevice, &Config);
   //
   // Set controller and operation mode
@@ -303,6 +485,41 @@ int LCD_X_DisplayDriver(unsigned LayerIndex, unsigned Cmd, void * pData) {
     r = -1;
   }
   return r;
+}
+
+void MX_GPIO_Init(void)
+{
+
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	  /* GPIO Ports Clock Enable */
+	__GPIOC_CLK_ENABLE();
+	__GPIOA_CLK_ENABLE();
+	__GPIOB_CLK_ENABLE();
+
+	  /*Configure GPIO pins : PAPin PAPin */
+	GPIO_InitStruct.Pin = (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7);
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	  /*Configure GPIO pin : PtPin */
+	GPIO_InitStruct.Pin = (GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8);
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	GPIOB->ODR = 0x1F0; // avoid spikes on control lines
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	GPIOB->ODR = 0x1F0;
+
+	  /*Configure GPIO pins : PC13: LED */
+	GPIO_InitStruct.Pin = GPIO_PIN_13;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
 }
 
 /*************************** End of file ****************************/

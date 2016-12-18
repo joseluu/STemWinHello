@@ -183,7 +183,7 @@
     <ClCompile Include="Src\GUIConf_F103_24.c" />
     <ClCompile Include="Src\GUI_X.c" />
     <ClCompile Include="Src\LCDConf_F103_24.c" />
-    <ClCompile Include="Src\main_orig.c" />
+    <ClCompile Include="Src\main.c" />
     <ClCompile Include="Src\stm32f1xx_hal_msp.c" />
     <ClCompile Include="Src\stm32f1xx_it.c" />
     <ClCompile Include="Src\SubdialogDLG.c" />

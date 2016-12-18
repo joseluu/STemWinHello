@@ -121,17 +121,17 @@ Purpose     : Display controller configuration (single layer)
 void MX_GPIO_Init(void);
 /* connection: 
 8 bit Data:  PortA, 
-CS: PB_7, chip select
-reset: PB_8, 
-RS RD: PB_6,      read strobe
-WR: PB_5,		write strobe
-RD  DC: PB_4     register or data  data/command
+RD: PB_11,      read strobe
+WR: PB_10,		write strobe
+RS  DC: PB_1     register or data  data/command
+CS: PB_0, chip select
+reset: PB_15, 
 */
-#define _RD(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
-#define _WR(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_5,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
-#define _DC(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_6,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
-#define _CS(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
-#define _RESET(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_8,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _RD(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_11,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _WR(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_10,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _DC(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _CS(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _RESET(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_15,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
 
 /* compatibility macros */
 #define wr_cmd8 LcdWriteReg
@@ -505,7 +505,7 @@ void MX_GPIO_Init(void)
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 	  /*Configure GPIO pin : PtPin */
-	GPIO_InitStruct.Pin = (GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8);
+	GPIO_InitStruct.Pin = (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_15);
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;

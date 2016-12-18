@@ -393,9 +393,6 @@
     <ClCompile Include="Src\LCDConf_F103_24.c">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\main_orig.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="Src\FramewinDLG.c">
       <Filter>Source files</Filter>
     </ClCompile>
@@ -403,6 +400,9 @@
       <Filter>Source files</Filter>
     </ClCompile>
     <ClCompile Include="Src\GUI_X.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\main.c">
       <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>

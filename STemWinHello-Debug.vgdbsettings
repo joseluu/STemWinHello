@@ -58,7 +58,7 @@
       </Features>
       <DisableDisassembly>false</DisableDisassembly>
       <ExamineMemoryWithXCommand>false</ExamineMemoryWithXCommand>
-      <StepIntoNewInstanceEntry>main</StepIntoNewInstanceEntry>
+      <StepIntoNewInstanceEntry />
       <ExamineRegistersInRawFormat>true</ExamineRegistersInRawFormat>
       <EnableSmartStepping>false</EnableSmartStepping>
       <DisableSignals>false</DisableSignals>
@@ -86,11 +86,11 @@
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.target</Key>
-          <Value>target/stm32f7x.cfg</Value>
+          <Value>target/stm32f1x.cfg</Value>
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.extraargs</Key>
-          <Value>-c init -c "reset init" -c "gdb_port 49265" -c "telnet_port 49264" </Value>
+          <Value>-c init -c "reset init" -c "gdb_port 53911" -c "telnet_port 53910"  </Value>
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.initargs</Key>
@@ -102,7 +102,7 @@
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.commands.program</Key>
-          <Value>load</Value>
+          <Value />
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.commands.autoprogram</Key>

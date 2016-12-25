@@ -119,6 +119,44 @@ Purpose     : Display controller configuration (single layer)
 **********************************************************************
 */
 void MX_GPIO_Init(void);
+
+#define SWEEPER 1
+#ifdef SWEEPER
+/* connection: 
+8 bit Data:  PortA, 
+RD: PC_10,      read strobe
+WR: PC_11,		write strobe
+RS  DC: PB_1     register or data  data/command
+CS: PB_0, chip select
+reset: PB_15, 
+*/
+#define _LE(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _RD(val) HAL_GPIO_WritePin(GPIOC,GPIO_PIN_10,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _WR(val) HAL_GPIO_WritePin(GPIOC,GPIO_PIN_11,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _DC(val) HAL_GPIO_WritePin(GPIOC,GPIO_PIN_12,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _CS(val) HAL_GPIO_WritePin(GPIOC,GPIO_PIN_8,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _RESET(val) HAL_GPIO_WritePin(GPIOC,GPIO_PIN_6,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#else
+#ifdef NUCLEO
+//   D0 connects to digital pin 8  PA9	(Notice these are
+//   D1 connects to digital pin 9  PC7  NOT in order!)
+//   D2 connects to digital pin 2  PA10
+//   D3 connects to digital pin 3  PB3
+//   D4 connects to digital pin 4  PB5
+//   D5 connects to digital pin 5  PB4
+//   D6 connects to digital pin 6  PB10
+//   D7 connects to digital pin 7  PA8
+#define YP A3  PB0 // must be an analog pin, use "An" notation!
+#define XM A2  PA4 // must be an analog pin, use "An" notation!
+#define YM 9   PC7 // can be a digital pin
+#define XP 8   PA8 // can be a digital pin
+#define LCD_CS A3  PB0
+#define LCD_CD A2  PA4
+#define LCD_WR A1  PA1
+#define LCD_RD A0  PA0
+#define LCD_RESET A4  PC1
+
+#else
 /* connection: 
 8 bit Data:  PortA, 
 RD: PB_11,      read strobe
@@ -132,10 +170,17 @@ reset: PB_15,
 #define _DC(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_1,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
 #define _CS(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
 #define _RESET(val) HAL_GPIO_WritePin(GPIOB,GPIO_PIN_15,(val?GPIO_PIN_SET:GPIO_PIN_RESET))
+#define _LE(val)
+#endif
+#endif
 
 /* compatibility macros */
-#define wr_cmd8 LcdWriteReg
-#define wr_data8 LcdWriteData
+#define wr_cmd8 LcdWriteReg8
+#define wr_data8 LcdWriteData8
+#define reg_write(cmd,data) {LcdWriteReg16(cmd);LcdWriteData16(data);}
+
+void init_9320(void);
+void init_9341(void);
 
 void delay_us_DWT(int uSec)
 {
@@ -152,15 +197,30 @@ void delay_us_DWT(int uSec)
 * Function description:
 *   Sets display register
 */
-static void LcdWriteReg(U8 Data) {
+
+static void LcdWriteReg16(U16 Cmd)
+{
+	_CS(1); // cancel previous command
+	_CS(0);
+	_DC(0); // 0=cmd
+	_LE(1);
+	GPIOA->ODR = Cmd & 0xFF; //write LSB
+	_LE(0);
+	_WR(0);
+	GPIOA->ODR = (Cmd >> 8);     // write MSB
+	_WR(1);					// should allow 10ns min settling time
+	_DC(1); // 1=data next
+}
+
+static void LcdWriteReg8(U8 Cmd) {
 	_CS(1); // cancel previous command
 	_CS(0);
 	_DC(0); // 0=cmd
 	_WR(0);
-	 GPIOA->ODR = Data;     // write 8bit
+	GPIOA->ODR &= 0xFF00;
+	GPIOA->ODR |= Cmd;     // write 8bit
 	_WR(1);					// should allow 10ns min settling time
 	_DC(1); // 1=data next
-
 }
 
 /********************************************************************
@@ -170,7 +230,17 @@ static void LcdWriteReg(U8 Data) {
 * Function description:
 *   Writes a value to a display register
 */
-static void LcdWriteData(U8 Data) {
+static void LcdWriteData16(U16 Data)
+{
+	_DC(1); // 1=data just to make sure
+	_WR(0);
+	_LE(1);
+	GPIOA->ODR = Data&0xFF;     // write LSB
+	_LE(0);
+	GPIOA->ODR = (Data>>8);     // write MSB
+	_WR(1);					// should allow 10ns min settling time
+}
+static void LcdWriteData8(U8 Data) {
 	_DC(1); // 1=data just to make sure
 	_WR(0);
 	GPIOA->ODR = Data;     // write 8bit
@@ -184,12 +254,20 @@ static void LcdWriteData(U8 Data) {
 * Function description:
 *   Writes multiple values to a display register.
 */
-static void LcdWriteDataMultiple(U8 * pData, int NumItems) {
+#ifdef SWEEPER
+static void LcdWriteDataMultiple16(U16 * pData, int NumItems)
+{
+	while (NumItems--) {
+		LcdWriteData16(*pData++);
+	} 
+}
+#else
+static void LcdWriteDataMultiple8(U8 * pData, int NumItems) {
   while (NumItems--) {
-	  LcdWriteData(*pData++);
+	  LcdWriteData8(*pData++);
   } 
 }
-
+#endif
 /********************************************************************
 *
 *       LcdReadDataMultiple
@@ -221,7 +299,7 @@ static void PortA_output()
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
-static U8 LcdReadData(void){
+static U8 LcdReadData8(void){
 	U8 Data;
 	PortA_input();
 	_RD(0);
@@ -234,7 +312,7 @@ static U8 LcdReadData(void){
 	return Data;
 }
 
-static void LcdReadDataMultiple(U8 * pData, int NumItems) {
+static void LcdReadDataMultiple8(U8 * pData, int NumItems) {
 	U8 Data;
 	PortA_input();
 	_RD(0);
@@ -255,10 +333,9 @@ unsigned int rd_reg_data32(unsigned char reg)
 	PortA_input();
    
 	U8 rb[4];
-	LcdReadDataMultiple(&rb[0], 4);
+	LcdReadDataMultiple8(&rb[0], 4);
 	r = rb[0] << 24 | rb[1] << 16 | rb[2] << 8 | rb[3];
 
-    
 	_CS(1); // force CS HIG to interupt the cmd in case was not supported
 	_CS(0);
 	PortA_output();
@@ -266,23 +343,110 @@ unsigned int rd_reg_data32(unsigned char reg)
 }
 
 
-void Board_LCD_Init(void)
-{
+void Board_LCD_Init(void) {
 	unsigned int tftID;
 	MX_GPIO_Init();
 	_RD(1);
 	_WR(1);
-	_DC(1);
-	_CS(1);
+	_DC(0);
+	_CS(0);
 	_RESET(1);
-	delay_us_DWT(150000);  // 10us min
+#ifdef SWEEPER
+	_LE(1);
+#endif
+	HAL_Delay(1);  // 10us min
 	_RESET(0);  // reset is active
-	delay_us_DWT(20000);  // 10us min
-	_RESET(1);                       // end reset
-	delay_us_DWT(150000);		// 120 ms min		
+	HAL_Delay(1); // 10us min
+	_RESET(1);          // end reset
+	HAL_Delay(150);		// 120 ms min		
 
+
+#if SWEEPER
+	init_9320();
+#else
 	tftID = rd_reg_data32(0xBF);
 	tftID = rd_reg_data32(0x0);
+	init_9341();
+#endif
+}
+
+
+void init_9320(){
+
+//flipped = FLIP_X; // FLIP_NONE, FLIP_X, FLIP_Y, FLIP_X|FLIP_Y
+ 
+reg_write(0x0001, 0x0100); 
+reg_write(0x0002, 0x0700); 
+reg_write(0x0003, 0x1030); 
+reg_write(0x0004, 0x0000); 
+reg_write(0x0008, 0x0202);  
+reg_write(0x0009, 0x0000);
+reg_write(0x000A, 0x0000); 
+reg_write(0x000C, 0x0000); 
+reg_write(0x000D, 0x0000);
+reg_write(0x000F, 0x0000);
+//power on sequence
+reg_write(0x0010, 0x0000);   
+reg_write(0x0011, 0x0007);  
+reg_write(0x0012, 0x0000);  
+reg_write(0x0013, 0x0000); 
+reg_write(0x0007, 0x0001);
+	HAL_Delay(200); 
+
+reg_write(0x0010, 0x10C0);   
+reg_write(0x0011, 0x0007);
+	HAL_Delay(50); 
+
+reg_write(0x0012, 0x0110);
+	HAL_Delay(50); 
+
+reg_write(0x0013, 0x0b00);
+	HAL_Delay(50); 
+
+reg_write(0x0029, 0x0000); 
+reg_write(0x002B, 0x4010); // bit 14???
+	HAL_Delay(50); 
+//gamma
+/*
+ reg_write(0x0030,0x0004);
+ reg_write(0x0031,0x0307);
+ reg_write(0x0032,0x0002);// 0006
+ reg_write(0x0035,0x0206);
+ reg_write(0x0036,0x0408);
+ reg_write(0x0037,0x0507); 
+ reg_write(0x0038,0x0204);//0200
+ reg_write(0x0039,0x0707); 
+ reg_write(0x003C,0x0405);// 0504
+ reg_write(0x003D,0x0F02);
+ */
+ //ram
+reg_write(0x0050, 0x0000); 
+reg_write(0x0051, 0x00EF);
+reg_write(0x0052, 0x0000); 
+reg_write(0x0053, 0x013F);  
+reg_write(0x0060, 0x2700); 
+reg_write(0x0061, 0x0001); 
+reg_write(0x006A, 0x0000); 
+//
+reg_write(0x0080, 0x0000); 
+reg_write(0x0081, 0x0000); 
+reg_write(0x0082, 0x0000); 
+reg_write(0x0083, 0x0000); 
+reg_write(0x0084, 0x0000); 
+reg_write(0x0085, 0x0000); 
+//
+reg_write(0x0090, 0x0000); 
+reg_write(0x0092, 0x0000); 
+reg_write(0x0093, 0x0001); 
+reg_write(0x0095, 0x0110); 
+reg_write(0x0097, 0x0000); 
+reg_write(0x0098, 0x0000);
+ 
+reg_write(0x0007, 0x0133); // display on
+}
+void init_9341(void)
+{
+
 
 	/* Start Initial Sequence ----------------------------------------------------*/
     
@@ -397,13 +561,11 @@ void Board_LCD_Init(void)
 	wr_cmd8(0x13); // Normal Displaymode
     
 	wr_cmd8(0x11);                     // sleep out
-	delay_us_DWT(150000);
+	HAL_Delay(150); 
      
 	wr_cmd8(0x29);                     // display on
-	delay_us_DWT(150000);
+	HAL_Delay(150); 
 }
-
-
 
 
 /*********************************************************************
@@ -442,11 +604,19 @@ void LCD_X_Config(void) {
   //
   // Set controller and operation mode
   //
-  PortAPI.pfWrite8_A0  = LcdWriteReg;
-  PortAPI.pfWrite8_A1  = LcdWriteData;
-  PortAPI.pfWriteM8_A1 = LcdWriteDataMultiple;
-  PortAPI.pfRead8_A1 = LcdReadData;
-  PortAPI.pfReadM8_A1  = LcdReadDataMultiple;
+#ifdef SWEEPER
+	PortAPI.pfWrite16_A0  = LcdWriteReg16;
+	PortAPI.pfWrite16_A1  = LcdWriteData16;
+	PortAPI.pfWriteM16_A1 = LcdWriteDataMultiple16;
+	PortAPI.pfRead8_A1 = LcdReadData8;
+	PortAPI.pfReadM8_A1  = LcdReadDataMultiple8;
+#else
+  PortAPI.pfWrite8_A0  = LcdWriteReg8;
+  PortAPI.pfWrite8_A1  = LcdWriteData8;
+  PortAPI.pfWriteM8_A1 = LcdWriteDataMultiple8;
+  PortAPI.pfRead8_A1 = LcdReadData8;
+  PortAPI.pfReadM8_A1  = LcdReadDataMultiple8;
+#endif
 	GUIDRV_FlexColor_SetFunc(pDevice, &PortAPI, GUIDRV_FLEXCOLOR_F66709, GUIDRV_FLEXCOLOR_M16C0B8);
 }
 
@@ -504,7 +674,24 @@ void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	  /*Configure GPIO pin : PtPin */
+#ifdef SWEEPER
+	  /*Configure GPIO pin : PB */
+	GPIO_InitStruct.Pin = (GPIO_PIN_14);
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	GPIOB->ODR = 0x1F0; // avoid spikes on control lines
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	GPIOB->ODR = 0x1F0;
+
+	  /*Configure GPIO pins : PC13: LED */
+	GPIO_InitStruct.Pin = (GPIO_PIN_6 | GPIO_PIN_8 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12);
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+#else
+	  /*Configure GPIO pin : PB */
 	GPIO_InitStruct.Pin = (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_15);
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -519,6 +706,7 @@ void MX_GPIO_Init(void)
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+#endif
 
 }
 

@@ -94,7 +94,7 @@ int main(void)
   /* Configure the system clock to 200 MHz */
   SystemClock_Config(); 
   
-  
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 	DWT->CYCCNT = 0;
   /* Enable hi resolution counter */
 	DWT->CTRL &= ~0x00000001;

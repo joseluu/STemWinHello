@@ -354,11 +354,11 @@ void Board_LCD_Init(void) {
 #ifdef SWEEPER
 	_LE(1);
 #endif
-	HAL_Delay(1);  // 10us min
+	delay_us_DWT(15);  // 10us min
 	_RESET(0);  // reset is active
-	HAL_Delay(1); // 10us min
+	delay_us_DWT(15); // 10us min
 	_RESET(1);          // end reset
-	HAL_Delay(150);		// 120 ms min		
+	delay_us_DWT(150000);		// 120 ms min		
 
 
 #if SWEEPER
@@ -444,7 +444,8 @@ reg_write(0x0098, 0x0000);
  
 reg_write(0x0007, 0x0133); // display on
 }
-void init_9341(void)
+
+void init_9341(void)
 {
 
 

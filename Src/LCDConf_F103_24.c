@@ -182,6 +182,13 @@ reset: PB_15,
 void init_9320(void);
 void init_9341(void);
 
+
+void delay_clk_DWT(uint32_t nCycles)
+{
+	volatile uint32_t start = DWT->CYCCNT;
+	do {
+	} while (DWT->CYCCNT - start < nCycles );
+}
 void delay_us_DWT(int uSec)
 {
 	volatile uint32_t cycles = (SystemCoreClock / 1000000L)*uSec;
@@ -201,25 +208,32 @@ void delay_us_DWT(int uSec)
 static void LcdWriteReg16(U16 Cmd)
 {
 	_CS(1); // cancel previous command
+	delay_clk_DWT(1);
 	_CS(0);
 	_DC(0); // 0=cmd
-	_LE(1);
-	GPIOA->ODR = Cmd & 0xFF; //write LSB
-	_LE(0);
 	_WR(0);
+	GPIOA->ODR = Cmd & 0xFF; //write LSB
+	_LE(1);
+	delay_clk_DWT(1);
+	_LE(0);
 	GPIOA->ODR = (Cmd >> 8);     // write MSB
+	delay_clk_DWT(1);
 	_WR(1);					// should allow 10ns min settling time
+	_CS(1);
 	_DC(1); // 1=data next
 }
 
 static void LcdWriteReg8(U8 Cmd) {
 	_CS(1); // cancel previous command
+	delay_clk_DWT(1);
 	_CS(0);
 	_DC(0); // 0=cmd
 	_WR(0);
 	GPIOA->ODR &= 0xFF00;
 	GPIOA->ODR |= Cmd;     // write 8bit
+	delay_clk_DWT(1);
 	_WR(1);					// should allow 10ns min settling time
+	_CS(1);
 	_DC(1); // 1=data next
 }
 
@@ -232,19 +246,26 @@ static void LcdWriteReg8(U8 Cmd) {
 */
 static void LcdWriteData16(U16 Data)
 {
+	_CS(0);
 	_DC(1); // 1=data just to make sure
-	_WR(0);
-	_LE(1);
 	GPIOA->ODR = Data&0xFF;     // write LSB
+	_LE(1);
+	delay_clk_DWT(1);
 	_LE(0);
 	GPIOA->ODR = (Data>>8);     // write MSB
+	delay_clk_DWT(1);
+	_WR(0);
 	_WR(1);					// should allow 10ns min settling time
+	_CS(1);
 }
 static void LcdWriteData8(U8 Data) {
+	_CS(0);
 	_DC(1); // 1=data just to make sure
-	_WR(0);
 	GPIOA->ODR = Data;     // write 8bit
+	delay_clk_DWT(1);
+	_WR(0);
 	_WR(1);					// should allow 10ns min settling time
+	_CS(1);
 }
 
 /********************************************************************
@@ -349,16 +370,16 @@ void Board_LCD_Init(void) {
 	_RD(1);
 	_WR(1);
 	_DC(0);
-	_CS(0);
+	_CS(1);
 	_RESET(1);
 #ifdef SWEEPER
-	_LE(1);
+	_LE(0);
 #endif
 	delay_us_DWT(15);  // 10us min
 	_RESET(0);  // reset is active
 	delay_us_DWT(15); // 10us min
 	_RESET(1);          // end reset
-	delay_us_DWT(150000);		// 120 ms min		
+	delay_us_DWT(151370);		// 120 ms min		
 
 
 #if SWEEPER
@@ -373,6 +394,7 @@ void Board_LCD_Init(void) {
 
 void init_9320(){
 
+	
 //flipped = FLIP_X; // FLIP_NONE, FLIP_X, FLIP_Y, FLIP_X|FLIP_Y
  
 reg_write(0x0001, 0x0100); 

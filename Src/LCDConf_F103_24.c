@@ -396,7 +396,10 @@ void init_9320(){
 
 	
 //flipped = FLIP_X; // FLIP_NONE, FLIP_X, FLIP_Y, FLIP_X|FLIP_Y
- 
+
+reg_write(0x00E5, 0x8000); // set the vcore voltage
+reg_write(0x0000, 0x0001); // start internal oscillator
+
 reg_write(0x0001, 0x0100); 
 reg_write(0x0002, 0x0700); 
 reg_write(0x0003, 0x1030); 
